@@ -2,14 +2,48 @@
 
 Repositorio que alberga la web del Aula de Cultura de la ETSII.
 <img alt="Aula de cultura" align="right" src="imagenes/image.png" width="15%" />
-Estructura principal:
-- `backend/`: Proyecto Django con las apps `catalog`, `news`, `rentals` y `users`.
-- `frontend/`: Código del frontend (single-page app).
 
-## Cómo ejecutar (desarrollo):
-1. Crear un fichero `.env` en `backend/` con las variables necesarias (p. ej. `DJANGO_SECRET_KEY`, `DATABASE_*`, `DEBUG`).
-2. Instalar dependencias del backend (uv) y del frontend según corresponda.
-3. Ejecutar migraciones y levantar el servidor Django:
+Estructura principal:
+- `backend/`: Proyecto Django (`catalog`, `news`, `rentals`, `users`).
+- `frontend/`: Código del frontend.
+- `docker-compose.yml`: Servicios de PostgreSQL y Backend.
+
+---
+
+## Ejecución con Docker
+
+### 1. Levantar el entorno por primera vez
+
+```sh
+docker compose up --build -d
+```
+
+Servicios iniciados:
+- **Base de Datos (PostgreSQL)**: puerto `5433` (interno `5432`).
+- **Backend (Django + DRF)**: `http://localhost:8000`.
+
+### 2. Migraciones y superusuario
+
+```sh
+docker compose exec backend python manage.py migrate
+docker compose exec backend python manage.py createsuperuser
+```
+
+### 3. Levantar el entorno para desarrollo normal
+
+```sh
+docker compose up -d
+```
+
+### 4. Comandos útiles
+
+- **Ver logs:** `docker compose logs -f backend`
+- **Detener servicios:** `docker compose down`
+- **Detener y borrar datos:** `docker compose down -v`
+
+---
+
+## Desarrollo local (sin Docker)
 
 ```sh
 cd backend
@@ -18,24 +52,7 @@ uv run python manage.py migrate
 uv run python manage.py runserver
 ```
 
-## Gestionar dependencias (backend)
+### Gestión de dependencias (`uv`)
 
-Desde la carpeta `backend` usamos la herramienta `uv` para gestionar dependencias. A continuación ejemplos y buenas prácticas:
-
-- Añadir una dependencia (ejemplo con versión explícita):
-
-```sh
-cd backend
-uv add django
-```
-
-- Eliminar una dependencia:
-
-```sh
-cd backend
-uv remove django
-```
-
-
-
-
+- **Añadir:** `uv add <paquete>`
+- **Eliminar:** `uv remove <paquete>`
