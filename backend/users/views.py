@@ -12,7 +12,7 @@ from .services import verify_google_token_and_create_user
 # Para evitar errores de importaciones en circulo, llamamos a la clase User siempre con el siguiente metodo
 User = get_user_model()
 
-class UserRegistrationViewSet(viewsets.GenericViewSet):
+class UserRegistrationViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
     queryset = User.objects.all()
     serializer_class=UserRegistrationSerializer
     permission_classes=[AllowAny]
