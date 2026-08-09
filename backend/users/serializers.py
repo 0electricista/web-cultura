@@ -5,7 +5,7 @@ from django.contrib.auth import get_user_model
 User = get_user_model()
 
 # Creamos 2 serializer, uno para registro y otro para lectura
-# Con otros modelos no seria necesario, pero asi dividimos y gestionamos mejor el aislamiento de las contraseñasd
+# Con otros modelos no seria necesario, pero asi dividimos y gestionamos mejor el aislamiento de las contraseñas
 class UserRegistrationSerializer(serializers.ModelSerializer):
     # Definimos el modelo que referencia y los campos que entrarian desde la peticion POST
     class Meta:
