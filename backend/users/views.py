@@ -3,6 +3,8 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.generics import GenericAPIView
+from rest_framework.throttling import ScopedRateThrottle
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from django.contrib.auth import get_user_model
 from .serializers import UserRegistrationSerializer, UserReadSerializer, GoogleSocialAuthSerializer
 from .services import verify_google_token_and_create_user
@@ -12,12 +14,16 @@ from .services import verify_google_token_and_create_user
 # Para evitar errores de importaciones en circulo, llamamos a la clase User siempre con el siguiente metodo
 User = get_user_model()
 
-class UserRegistrationViewSet(viewsets.GenericViewSet):
+class UserRegistrationViewSet(mixins.CreateModelMixin ,viewsets.GenericViewSet):
     queryset = User.objects.all()
     serializer_class=UserRegistrationSerializer
     permission_classes=[AllowAny]
+    # Endpoint sensible a fuerza bruta / creación masiva de cuentas: límite
+    # propio y más estricto que el global (ver REST_FRAMEWORK en settings.py).
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = 'auth'
 
-class UserProfileViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
+class UserProfileViewSet(viewsets.GenericViewSet):
     # Procesamos solo peticiones GET (ListModelMixin)
     queryset = User.objects.all()
     serializer_class=UserReadSerializer
@@ -43,7 +49,12 @@ class GoogleLoginView(GenericAPIView):
     Endpoint para autenticar a un usuario mediante Google OAuth2.
     Recibe el token de Google, lo valida y devuelve los tokens JWT de acceso y refresco.
     """
-    serializer_class = GoogleSocialAuthSerializer    
+    serializer_class = GoogleSocialAuthSerializer
+
+    # Es una vía de login: mismo límite estricto que el resto de endpoints de auth.
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = 'auth'    
+
     permission_classes = [AllowAny]
     # Redefinimos el metodo post
     def post(self, request, *args, **kwargs):
@@ -66,3 +77,15 @@ class GoogleLoginView(GenericAPIView):
             
         except ValueError as e:
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+# No podemos añadir throttle_classes directamente a las vistas de login/refresh
+# de simplejwt porque viven en un paquete instalado (no editable aquí). Por
+# eso heredamos de ellas solo para adjuntarles el scope 'auth', y en
+# urls.py se enruta a estas subclases en lugar de a las originales.
+class ThrottledTokenObtainPairView(TokenObtainPairView):
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = 'auth'
+
+class ThrottledTokenRefreshView(TokenRefreshView):
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = 'auth'
