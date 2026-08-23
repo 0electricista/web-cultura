@@ -1,8 +1,8 @@
-from django.shortcuts import render
 from rest_framework import viewsets
 from .serializers import RentSerializer
 from .permissions import IsOwnerOrAdmin
 from .models import Rent
+from django.db import transaction
 
 # Create your views here.
 class RentViewSet(viewsets.ModelViewSet):
@@ -15,5 +15,9 @@ class RentViewSet(viewsets.ModelViewSet):
             return Rent.objects.all()
         return Rent.objects.filter(user=user)
 
+    @transaction.atomic
     def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
+        #Guarda la entidad del alquiler al crearlo
+        rent = serializer.save(user=self.request.user)
+        #Descontar de stock al hacer reserva
+        rent.product.decrease_stock()
