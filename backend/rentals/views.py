@@ -3,6 +3,7 @@ from .serializers import RentSerializer
 from .permissions import IsOwnerOrAdmin
 from .models import Rent
 from django.db import transaction
+from django.core.mail import send_mail
 
 # Create your views here.
 class RentViewSet(viewsets.ModelViewSet):
@@ -19,5 +20,16 @@ class RentViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         #Guarda la entidad del alquiler al crearlo
         rent = serializer.save(user=self.request.user)
+        
         #Descontar de stock al hacer reserva
         rent.product.decrease_stock()
+
+        #Email de confirmación tras hacer reserva
+        send_mail(
+            subject=f"Confirmacion de reserva de {rent.product.name}",
+            message=f"Hola {rent.user.full_name}, tu reserva de {rent.product.name} se ha realizado correctamente."
+                    f"Tienes desde el {rent.started_at} hasta el {rent.ended_at} para disfrutarlo." , 
+            from_email="",#email desde el que se mande
+            recipient_list=[rent.user.email],
+            fail_silently=True,
+        )    
