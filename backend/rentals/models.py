@@ -9,7 +9,7 @@ class Rent(models.Model):
     STATUS_CHOICES = [("PENDING","pendiente"),("ACTIVE","activo"),("COMPLETED","completado"),("CANCELLED","cancelado")]
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='user')
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='userRentals')
     product = models.ForeignKey("catalog.Product", on_delete=models.PROTECT, related_name='rent')
     started_at = models.DateField()
     ended_at = models.DateField()
