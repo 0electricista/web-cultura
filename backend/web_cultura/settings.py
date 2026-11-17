@@ -140,7 +140,31 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.IsAuthenticated',
     ),
+
+    # Rate limiting (throttling): límite de peticiones por defecto para TODA la API.
+    # AnonRateThrottle cuenta por IP (usuarios sin autenticar), UserRateThrottle
+    # cuenta por usuario autenticado.
+    'DEFAULT_THROTTLE_CLASSES': (
+        'rest_framework.throttling.AnonRateThrottle',
+        'rest_framework.throttling.UserRateThrottle',
+    ),
+    'DEFAULT_THROTTLE_RATES': {
+        'anon': '20/min',
+        'user': '60/min',
+        # Scope propio, más estricto, para frenar fuerza bruta en login/registro.
+        # No se aplica solo, requiere que la vista declare throttle_scope='auth'.
+        'auth': '5/min',
+    },
 }
+
+# DRF guarda los contadores de throttling aquí. LocMemCache vive en la memoria
+# del proceso de runserver: válido para este proyecto (sin Docker/gunicorn aún)
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+    }
+}
+
 
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
