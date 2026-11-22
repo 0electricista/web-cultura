@@ -26,7 +26,7 @@ class Rent(models.Model):
             raise ValidationError({"ended_at":"La fecha de devolución no puede ser anterior a la fecha de inicio."})
         
         #fecha de inicio debe ser a futuro
-        if not self.pk and self.started_at < timezone.now().date():
+        if not self._state.adding and self.started_at < timezone.now().date():
             raise ValidationError({"started_at":"La fecha de inicio no puede ser anterior al día de hoy."})
 
         #la duracion del alquiler va a ser de un día como mínimo
@@ -39,7 +39,7 @@ class Rent(models.Model):
 
     def _validate_stock(self):
         #debe existir stock suficiente antes de reservar
-        if not self.pk:
+        if self._state.adding:
             if self.product and self.product.stock <= 0:
                 raise ValidationError({"product":f"El producto '{self.product.name}' no tiene unidades disponibles."})
 
