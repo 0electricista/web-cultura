@@ -26,8 +26,8 @@ class Rent(models.Model):
             raise ValidationError({"ended_at":"La fecha de devolución no puede ser anterior a la fecha de inicio."})
         
         #fecha de inicio debe ser a futuro
-        if not self._state.adding and self.started_at < timezone.now().date():
-            raise ValidationError({"started_at":"La fecha de inicio no puede ser anterior al día de hoy."})
+        if self._state.adding and self.started_at < timezone.now().date():
+            raise ValidationError({"started_at": "La fecha de inicio no puede ser anterior al día de hoy."})
 
         #la duracion del alquiler va a ser de un día como mínimo
         if (self.ended_at-self.started_at).days<1:

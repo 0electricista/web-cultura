@@ -41,7 +41,7 @@ class RentViewSet(mixins.CreateModelMixin,
         rent.product.decrease_stock()
 
         #Email de confirmación tras hacer reserva
-        user_name = getattr(rent.user, "full_name", None) or rent.user.get_full_name() or rent.user.username
+        user_name = getattr(rent.user, "full_name", "") or rent.user.email
         send_mail(
             subject=f"Confirmacion de reserva de {rent.product.name}",
             message=f"Hola {user_name}, tu reserva de {rent.product.name} se ha realizado correctamente."
