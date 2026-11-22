@@ -22,14 +22,18 @@ from users.views import ThrottledTokenObtainPairView, ThrottledTokenRefreshView
 urlpatterns = [
     # Panel de administracion:
     path('admin/', admin.site.urls),
-
+  
     # Incluimos las url definidas en cada app:
-    path('api/users/', include('users.urls')),
     path('api/rents', include('rentals.urls')),
 
     # Rutas para obtencion de los tokens de usuarios
     path('api/token/', ThrottledTokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/token/refresh/', ThrottledTokenRefreshView.as_view(), name='token_refresh'),
     path('api/news/', include('news.urls')),
-
+    path('api/catalog/', include('catalog.urls')),
+    path('api/users/',include('users.urls')),
+  
+    # Rutas para obtencion de los tokens de usuarios (con rate limit, ver users/views.py)
+    path('api/token/', ThrottledTokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('api/token/refresh/', ThrottledTokenRefreshView.as_view(), name='token_refresh'),
 ]
