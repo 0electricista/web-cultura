@@ -47,7 +47,7 @@ class Rent(models.Model):
         if not(self.product_id and self.started_at and self.ended_at):
             return
 
-        overlapping_rents=Rent.objects.filter(product=self.product,status__in=["PENDING","ACTIVE"],started_at_lte=self.ended_at,ended_at_gte=self.started_at)
+        overlapping_rents=Rent.objects.filter(product=self.product,status__in=["PENDING","ACTIVE"],started_at__lte=self.ended_at,ended_at__gte=self.started_at)
         if self.pk:
             overlapping_rents = overlapping_rents.exclude(pk=self.pk)
         if overlapping_rents.exists():
