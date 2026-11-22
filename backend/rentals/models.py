@@ -9,11 +9,11 @@ class Rent(models.Model):
     STATUS_CHOICES = [("PENDING","pendiente"),("ACTIVE","activo"),("COMPLETED","completado"),("CANCELLED","cancelado")]
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='user')
-    product = models.ForeignKey("catalog.Product", on_delete=models.PROTECT, related_name='rent')
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='rents')
+    product = models.ForeignKey("catalog.Product", on_delete=models.PROTECT, related_name='rents')
     started_at = models.DateField()
     ended_at = models.DateField()
-    status = models.CharField(choices=STATUS_CHOICES,default="PENDING")
+    status = models.CharField(choices=STATUS_CHOICES,default="PENDING",max_length=20)
 
     #reglas de negocio
     def _validate_dates(self):
@@ -26,8 +26,8 @@ class Rent(models.Model):
             raise ValidationError({"ended_at":"La fecha de devolución no puede ser anterior a la fecha de inicio."})
         
         #fecha de inicio debe ser a futuro
-        if not self.pk and self.started_at < timezone.now.date():
-            raise ValidationError({"started_at":"La fecha de inicion no puede ser anterior al día de hoy."})
+        if not self.pk and self.started_at < timezone.now().date():
+            raise ValidationError({"started_at":"La fecha de inicio no puede ser anterior al día de hoy."})
 
         #la duracion del alquiler va a ser de un día como mínimo
         if (self.ended_at-self.started_at).days<1:
@@ -47,7 +47,7 @@ class Rent(models.Model):
         if not(self.product_id and self.started_at and self.ended_at):
             return
 
-        overlapping_rents=Rent.objects.filter(product=self.product,status=["PENDING","ACTIVE"],started_at=self.ended_at,ended_at=self.started_at)
+        overlapping_rents=Rent.objects.filter(product=self.product,status__in=["PENDING","ACTIVE"],started_at_lte=self.ended_at,ended_at_gte=self.started_at)
         if self.pk:
             overlapping_rents = overlapping_rents.exclude(pk=self.pk)
         if overlapping_rents.exists():
@@ -63,6 +63,8 @@ class Rent(models.Model):
 
     #acciones customizadas
     def renew(self,new_end_date):
+        if self.status in ["CANCELLED", "COMPLETED"]:
+            raise ValidationError(f"No se puede renovar un alquiler en estado {self.status}.")
         self.ended_at=new_end_date
         self.save()
 
@@ -72,6 +74,7 @@ class Rent(models.Model):
             raise ValidationError(f"No se puede cancelar en estado {self.status}.")
         self.status="CANCELLED"
         self.product.increase_stock()
+        self.product.save()
         self.save()
 
     def pickup(self):
@@ -83,7 +86,7 @@ class Rent(models.Model):
     def complete(self):
         if self.status !="ACTIVE":
             raise ValidationError(f"No se puede dar por devuelto un alquiler en estado {self.status}.")
-        self.status="COMPLETE"
+        self.status="COMPLETED"
         self.product.increase_stock()
         self.product.save()
         self.save()
