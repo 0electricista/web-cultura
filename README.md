@@ -56,3 +56,57 @@ uv run python manage.py runserver
 
 - **Añadir:** `uv add <paquete>`
 - **Eliminar:** `uv remove <paquete>`
+
+---
+
+## Frontend (Angular)
+
+Proyecto generado con [Angular CLI](https://github.com/angular/angular-cli) versión 21.2.31. Todos los comandos se ejecutan desde `frontend/`.
+
+### Servidor de desarrollo
+
+```sh
+ng serve
+```
+
+Una vez iniciado, abre `http://localhost:4200/`. La aplicación se recarga automáticamente al modificar cualquier archivo fuente.
+
+### Generación de código (scaffolding)
+
+```sh
+ng generate component nombre-del-componente
+```
+
+Para ver la lista completa de esquemas (`components`, `directives`, `pipes`, etc.):
+
+```sh
+ng generate --help
+```
+
+### Compilación
+
+```sh
+ng build
+```
+
+Compila el proyecto y guarda los artefactos en `dist/`. Por defecto, la compilación de producción está optimizada para rendimiento y velocidad.
+
+### Tests unitarios
+
+Se usa [Vitest](https://vitest.dev/) como ejecutor de tests:
+
+```sh
+ng test
+```
+
+### Tests end-to-end
+
+```sh
+ng e2e
+```
+
+Angular CLI no incluye ningún framework e2e por defecto; puedes elegir el que mejor se adapte.
+
+### Recursos adicionales
+
+Más información en la [referencia de Angular CLI](https://angular.dev/tools/cli).
